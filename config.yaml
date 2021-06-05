@@ -1,0 +1,22 @@
+general:
+  debug: true                           # show debug messages
+  errors: true                          # show error messages
+  data_dir: "/tmp/data/"
+
+recon:
+  #target_identifation is an array of commands used to build a list of targets. multiple tools/scripts can be combined to accomplish this.
+  # for example you could run amass + sublister + a bash script to combine the results.
+  target_identification:
+    - name: amass
+      cmdline: "/tmp/fake/amass enum -d {{ .RootDomsCSV }} -o {{ .OutFile }} -config /work/dev/webrecon-tools/etc/config.ini"
+      callback: domains
+    - name: assetfinder
+      cmdline: "for line in `cat {{ .RootDomsFile }}`;do /tmp/fake/assetfinder -subs-only $line | tee -a {{ .OutFile }};done"
+      callback: domains
+   
+  # flyover tools should generate HTTP pages which can be served by the server. additional commands can be chained to produce the html if needed
+  # aquatone is prefered due to its templating system, but you could also use something like EyeWitness.
+  flyover: 
+     - name: aquatone
+       cmdline: "cat {{ .DomsIPFile }} | /tmp/fake/aquatone -ports large -out {{ .OutDir }}"
+       callback: aq
